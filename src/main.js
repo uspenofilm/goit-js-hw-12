@@ -65,6 +65,7 @@ loadMore.addEventListener('click', async event => {
     top: 400,
     behavior: 'smooth',
   });
+  
   if (page > totalPages) {
     loadMore.style.display = 'none';
     return iziToast.error({
