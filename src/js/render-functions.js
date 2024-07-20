@@ -26,4 +26,4 @@ export function createMarkup(images) {
     captionDelay: 250,
   });
   lightbox.refresh();
-};
+}
