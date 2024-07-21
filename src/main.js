@@ -15,13 +15,15 @@ import { createMarkup } from './js/render-functions.js';
 loader.style.display = 'none';
 loadMore.style.display = 'none';
 
+let totalPages = 0;
+
 form.addEventListener('submit', async event => {
   event.preventDefault();
   gallery.innerHTML = '';
   q = searchLine.value.trim();
   page = 1;
   if (q === '') {
-    iziToast.show({
+    return iziToast.show({
       message: 'Please fill out this field',
       messageColor: '#FAFAFB',
       messageSize: '16px',
@@ -32,45 +34,57 @@ form.addEventListener('submit', async event => {
     });
   }
   loader.style.display = 'block';
+  loadMore.style.display = 'none';
   form.reset();
-  const response = await sendRequest(q, page);
-  const images = response.hits;
-  loader.style.display = 'none';
-  if (images.length === 0) {
-    iziToast.show({
-      message:
-        'Sorry, there are no images matching your search query. Please try again!',
-      messageColor: '#FAFAFB',
-      messageSize: '16px',
-      messageLineHeight: '24px',
-      backgroundColor: '#EF4040',
-      position: 'topRight',
-      maxWidth: '432px',
-    });
+  try {
+    const response = await sendRequest(q, page);
+    totalPages = Math.ceil(response.totalHits / 15);
+    const images = response.hits;
+    loader.style.display = 'none';
+    if (images.length === 0) {
+      return iziToast.show({
+        message:
+          'Sorry, there are no images matching your search query. Please try again!',
+        messageColor: '#FAFAFB',
+        messageSize: '16px',
+        messageLineHeight: '24px',
+        backgroundColor: '#EF4040',
+        position: 'topRight',
+        maxWidth: '432px',
+      });
+    }
+    createMarkup(images);
+    loadMore.style.display = 'block';
+  } catch (error) {
+    console.log(error);
+  } finally {
+    loader.style.display = 'none';
   }
-  createMarkup(images);
-  loadMore.style.display = 'block';
 });
 
 loadMore.addEventListener('click', async event => {
-  page += 1;
-  loader.style.display = 'block';
-  const response = await sendRequest(q, page);
-  console.log(response);
-  const images = response.hits;
-  const totalPages = Math.ceil(response.totalHits / 15);
-  loader.style.display = 'none';
-  createMarkup(images);
-  window.scrollBy({
-    top: 400,
-    behavior: 'smooth',
-  });
-  
-  if (page > totalPages) {
+  if (page >= totalPages) {
     loadMore.style.display = 'none';
     return iziToast.error({
       position: 'topRight',
       message: "We're sorry, but you've reached the end of search results.",
     });
+  }
+  page += 1;
+  loader.style.display = 'block';
+  try {
+    const response = await sendRequest(q, page);
+    console.log(response);
+    const images = response.hits;
+    loader.style.display = 'none';
+    createMarkup(images);
+    window.scrollBy({
+      top: 400,
+      behavior: 'smooth',
+    });
+  } catch (error) {
+    console.log(error);
+  } finally {
+    loader.style.display = 'none';
   }
 });

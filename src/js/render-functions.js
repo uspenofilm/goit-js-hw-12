@@ -1,6 +1,11 @@
 import SimpleLightbox from 'simplelightbox';
 import 'simplelightbox/dist/simple-lightbox.min.css';
 
+const lightbox = new SimpleLightbox('.gallery a', {
+  captionsData: 'alt',
+  captionDelay: 250,
+});
+
 export function createMarkup(images) {
   const gallery = document.querySelector('.gallery');
   gallery.insertAdjacentHTML('beforeend', images.map(imageToString).join(''));
@@ -21,9 +26,5 @@ export function createMarkup(images) {
         </a>
       </li>`;
   }
-  const lightbox = new SimpleLightbox('.gallery a', {
-    captionsData: 'alt',
-    captionDelay: 250,
-  });
   lightbox.refresh();
 }
